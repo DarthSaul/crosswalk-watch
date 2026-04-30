@@ -10,7 +10,7 @@
 # Pick `app` and `primary_region` to match your account before the first deploy.
 
 app = "crosswalk-watch-backend"
-primary_region = "sjc"
+primary_region = "ewr"
 
 [build]
   dockerfile = "Dockerfile"

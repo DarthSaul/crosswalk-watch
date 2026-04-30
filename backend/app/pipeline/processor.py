@@ -31,11 +31,15 @@ def process_video(
     zones: list[ZoneDefinition] | None = None,
     progress_callback: ProgressCallback | None = None,
     progress_throttle_frames: int = 15,
+    *,
+    yolo_weights: str = "yolo11n.pt",
+    yolo_imgsz: int = 640,
+    yolo_conf: float = 0.25,
 ) -> ProcessingStats:
     if not video_path.exists():
         raise PipelineError(f"video not found: {video_path}")
 
-    model = load_model()
+    model = load_model(yolo_weights)
     tracker = make_tracker()
     annotators = make_annotators()
 
@@ -59,6 +63,8 @@ def process_video(
                 results = model(
                     frame,
                     classes=list(ALLOWED_CLASS_IDS),
+                    imgsz=yolo_imgsz,
+                    conf=yolo_conf,
                     verbose=False,
                 )[0]
                 detections = sv.Detections.from_ultralytics(results)

@@ -71,14 +71,22 @@ exists):
 
 ## Configuration
 
-| Where | Var | Default |
-|---|---|---|
-| frontend | `NUXT_PUBLIC_API_BASE` | `http://localhost:8000` |
-| backend | `CROSSWALK_MAX_UPLOAD_MB` | `200` |
-| backend | `CROSSWALK_THUMBNAIL_SECONDS` | `1.0` |
-| backend | `CROSSWALK_DATA_DIR` | `data` |
+| Where | Var | Default | Notes |
+|---|---|---|---|
+| frontend | `NUXT_PUBLIC_API_BASE` | `http://localhost:8000` | |
+| backend | `CROSSWALK_MAX_UPLOAD_MB` | `200` | |
+| backend | `CROSSWALK_THUMBNAIL_SECONDS` | `1.0` | |
+| backend | `CROSSWALK_DATA_DIR` | `data` | |
+| backend | `CROSSWALK_YOLO_WEIGHTS` | `yolo11n.pt` | nano (~5 MB). Try `yolo11s.pt` (~22 MB) for better small-object recall. |
+| backend | `CROSSWALK_YOLO_IMGSZ` | `640` | Inference resolution. Bumping to `1280` 3-4× the runtime but picks up far-away pedestrians. |
+| backend | `CROSSWALK_YOLO_CONF` | `0.25` | Detection confidence floor. Lower (e.g. `0.15`) catches more tentative detections. |
 
 Backend env vars are also honored through `backend/.env`. See [.env.example](.env.example).
+
+If pedestrians are getting missed in a clip — common when people are small in the
+frame relative to the vehicles — bump `CROSSWALK_YOLO_IMGSZ=1280` first; that
+alone fixes most cases. If that's still not enough, swap to `yolo11s.pt` and/or
+drop the confidence floor.
 
 ## Layout
 

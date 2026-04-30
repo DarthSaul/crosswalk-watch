@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     allowed_origins: list[str] = ["http://localhost:3000"]
     thumbnail_seconds: float = 1.0
     max_upload_mb: int = 200
+    yolo_weights: str = "yolo11n.pt"
+    yolo_imgsz: int = 640
+    yolo_conf: float = 0.25
 
     @property
     def uploads_dir(self) -> Path:

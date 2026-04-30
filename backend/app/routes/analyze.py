@@ -48,7 +48,12 @@ async def analyze_job(
     )
 
     background_tasks.add_task(
-        _run_pipeline, job_id, record.video_path, output_path, request.zones
+        _run_pipeline,
+        job_id,
+        record.video_path,
+        output_path,
+        request.zones,
+        settings,
     )
     refreshed = job_store.get(job_id)
     assert refreshed is not None
@@ -60,6 +65,7 @@ def _run_pipeline(
     video_path: Path,
     output_path: Path,
     zones: list[ZoneDefinition],
+    settings: Settings,
 ) -> None:
     def on_progress(p: float) -> None:
         job_store.update(job_id, progress=p)
@@ -70,6 +76,9 @@ def _run_pipeline(
             output_path,
             zones=zones,
             progress_callback=on_progress,
+            yolo_weights=settings.yolo_weights,
+            yolo_imgsz=settings.yolo_imgsz,
+            yolo_conf=settings.yolo_conf,
         )
         job_store.update(
             job_id,

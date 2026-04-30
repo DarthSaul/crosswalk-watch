@@ -242,3 +242,6 @@ frontend/dist/
 
 # Local env
 .env
+
+# YOLO weights (auto-downloaded on first run)
+*.pt

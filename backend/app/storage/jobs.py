@@ -1,31 +1,31 @@
-import asyncio
+import threading
 from typing import Any
 
 from app.schemas import JobRecord
 
 
 _jobs: dict[str, JobRecord] = {}
-_lock = asyncio.Lock()
+_lock = threading.Lock()
 
 
-async def create(record: JobRecord) -> None:
-    async with _lock:
+def create(record: JobRecord) -> None:
+    with _lock:
         _jobs[record.id] = record
 
 
-async def get(job_id: str) -> JobRecord | None:
-    async with _lock:
+def get(job_id: str) -> JobRecord | None:
+    with _lock:
         return _jobs.get(job_id)
 
 
-async def update(job_id: str, **fields: Any) -> JobRecord:
-    async with _lock:
+def update(job_id: str, **fields: Any) -> JobRecord:
+    with _lock:
         record = _jobs[job_id]
         updated = record.model_copy(update=fields)
         _jobs[job_id] = updated
         return updated
 
 
-async def list_all() -> list[JobRecord]:
-    async with _lock:
+def list_all() -> list[JobRecord]:
+    with _lock:
         return list(_jobs.values())

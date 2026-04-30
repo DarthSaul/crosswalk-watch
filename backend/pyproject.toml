@@ -11,6 +11,8 @@ dependencies = [
     "python-multipart>=0.0.18",
     "opencv-python-headless>=4.10",
     "numpy>=1.26,<3",
+    "ultralytics>=8.3",
+    "supervision>=0.25",
 ]
 
 [dependency-groups]

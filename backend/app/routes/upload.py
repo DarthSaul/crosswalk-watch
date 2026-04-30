@@ -90,5 +90,5 @@ async def upload_video(
         thumbnail_path=thumb_path,
         created_at=datetime.now(timezone.utc),
     )
-    await job_store.create(record)
+    job_store.create(record)
     return JobResponse.from_record(record)

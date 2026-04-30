@@ -17,9 +17,19 @@ export function useJobApi() {
     return await $fetch<JobResponse>(`${apiBase}/api/jobs/${id}`)
   }
 
+  async function analyzeJob(id: string): Promise<JobResponse> {
+    return await $fetch<JobResponse>(`${apiBase}/api/jobs/${id}/analyze`, {
+      method: 'POST',
+    })
+  }
+
   function thumbnailUrl(id: string): string {
     return `${apiBase}/api/jobs/${id}/thumbnail`
   }
 
-  return { uploadVideo, getJob, thumbnailUrl, apiBase }
+  function resultUrl(id: string): string {
+    return `${apiBase}/api/jobs/${id}/result`
+  }
+
+  return { uploadVideo, getJob, analyzeJob, thumbnailUrl, resultUrl, apiBase }
 }

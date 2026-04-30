@@ -9,7 +9,7 @@ router = APIRouter(prefix="/api/jobs", tags=["jobs"])
 
 @router.get("/{job_id}", response_model=JobResponse)
 async def get_job(job_id: str) -> JobResponse:
-    record = await job_store.get(job_id)
+    record = job_store.get(job_id)
     if record is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="job not found")
     return JobResponse.from_record(record)

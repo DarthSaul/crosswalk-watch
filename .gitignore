@@ -239,7 +239,7 @@ frontend/.nuxt/
 frontend/.output/
 frontend/.data/
 frontend/.cache/
-frontend/.netlify/
+frontend/.vercel/
 frontend/dist/
 
 # Local sample videos at repo root (large MP4s)

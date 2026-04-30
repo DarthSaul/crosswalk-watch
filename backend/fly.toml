@@ -4,7 +4,7 @@
 #   fly launch --no-deploy --copy-config        # if you want to re-generate; keep this file
 #   fly volumes create crosswalk_data --size 3 --region <your region>
 #   fly secrets set \
-#     CROSSWALK_ALLOWED_ORIGINS='["https://<your-frontend>.netlify.app"]'
+#     CROSSWALK_ALLOWED_ORIGINS='["https://<your-frontend>.vercel.app"]'
 #   fly deploy
 #
 # Pick `app` and `primary_region` to match your account before the first deploy.

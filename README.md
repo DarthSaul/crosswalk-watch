@@ -170,8 +170,8 @@ Recommended split for a portfolio-style demo (~$5/mo all-in):
 - **Backend** on [Fly.io](https://fly.io) — runs the existing
   [backend/Dockerfile](backend/Dockerfile), persistent volume for data, machines
   sleep when idle and wake on incoming requests.
-- **Frontend** on [Netlify](https://www.netlify.com) — Nuxt 3 with the
-  first-party Netlify preset, free tier covers it.
+- **Frontend** on [Vercel](https://vercel.com) — Nuxt 3 with the Vercel nitro
+  preset, free Hobby tier covers it.
 
 ### Backend — Fly.io
 
@@ -186,9 +186,9 @@ fly launch --copy-config --no-deploy
 # Persistent disk for uploads, outputs, sample thumbnails, YOLO weights
 fly volumes create crosswalk_data --size 3 --region <your-region>
 
-# CORS for your eventual Netlify URL (JSON list, set as a Fly secret)
+# CORS for your eventual Vercel URL (JSON list, set as a Fly secret)
 fly secrets set \
-  CROSSWALK_ALLOWED_ORIGINS='["https://<your-site>.netlify.app"]'
+  CROSSWALK_ALLOWED_ORIGINS='["https://<your-site>.vercel.app"]'
 
 fly deploy
 ```
@@ -201,12 +201,12 @@ files into `backend/samples-seed/` before `fly deploy` — they're baked into
 `/app/data/samples/` at image build time. Trim long clips down first
 (`ffmpeg -i input.mp4 -t 10 -c copy seed.mp4`) so they don't bloat the image.
 
-### Frontend — Netlify
+### Frontend — Vercel
 
-1. Connect the repo as a new site.
-2. Base directory: `frontend` (the committed `netlify.toml` handles the rest).
+1. Import the GitHub repo as a new project.
+2. Set **Root Directory** to `frontend` (Vercel auto-detects Nuxt 3 from there).
 3. Add an env var: `NUXT_PUBLIC_API_BASE=https://<fly-app>.fly.dev`.
-4. Trigger a deploy.
+4. Deploy.
 
 ### Tuning detection in production
 

@@ -6,7 +6,14 @@ const pct = computed(() => Math.max(0, Math.min(100, Math.round(props.progress *
 
 <template>
   <div class="progress">
-    <div class="bar">
+    <div
+      class="bar"
+      role="progressbar"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      :aria-valuenow="pct"
+      :aria-valuetext="`${pct}%`"
+    >
       <div class="fill" :style="{ width: `${pct}%` }" />
     </div>
     <p class="meta">

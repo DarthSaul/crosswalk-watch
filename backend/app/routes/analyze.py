@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.config import Settings, get_settings
-from app.pipeline.processor import PipelineError, process_video
+from app.pipeline.processor import process_video
 from app.schemas import AnalyzeRequest, JobResponse, JobStatus, ZoneDefinition
 from app.storage import jobs as job_store
 
@@ -86,7 +86,7 @@ def _run_pipeline(
             progress=1.0,
             stats=stats,
         )
-    except (PipelineError, Exception) as exc:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001
         log.exception("pipeline failed for job %s", job_id)
         job_store.update(
             job_id,

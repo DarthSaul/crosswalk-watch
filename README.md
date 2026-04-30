@@ -90,7 +90,7 @@ drop the confidence floor.
 
 ## Layout
 
-```
+```text
 backend/
   app/
     main.py            # FastAPI app + CORS + router mount

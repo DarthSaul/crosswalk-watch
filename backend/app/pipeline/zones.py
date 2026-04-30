@@ -38,8 +38,16 @@ def build_zone_runtimes(
 def _denormalize(
     points: list[tuple[float, float]], width: int, height: int
 ) -> np.ndarray:
+    max_x = max(width - 1, 0)
+    max_y = max(height - 1, 0)
     return np.array(
-        [(round(x * width), round(y * height)) for x, y in points],
+        [
+            (
+                min(max(round(x * width), 0), max_x),
+                min(max(round(y * height), 0), max_y),
+            )
+            for x, y in points
+        ],
         dtype=np.int32,
     )
 
@@ -52,6 +60,9 @@ def update_zone_runtimes(
         in_zone = detections[in_mask]
 
         in_track_ids: set[int] = set()
+        if in_zone.tracker_id is None:
+            runtime.occupancy_series.append(0)
+            continue
         for tid in in_zone.tracker_id:
             if tid is None:
                 continue

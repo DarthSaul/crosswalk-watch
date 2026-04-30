@@ -91,3 +91,5 @@ def test_pipeline_smoke(tmp_path: Path) -> None:
     assert len(zone_stat.occupancy_series) == written
     assert zone_stat.entries >= 0
     assert zone_stat.max_concurrent >= 0
+    peak = max(zone_stat.occupancy_series) if zone_stat.occupancy_series else 0
+    assert zone_stat.max_concurrent == peak

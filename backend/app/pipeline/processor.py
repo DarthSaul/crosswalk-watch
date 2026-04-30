@@ -108,7 +108,7 @@ def process_video(
 
 def _build_labels(detections: sv.Detections) -> list[str]:
     out: list[str] = []
-    for tid, cid in zip(detections.tracker_id, detections.class_id):
+    for tid, cid in zip(detections.tracker_id, detections.class_id, strict=True):
         name = CLASS_NAMES.get(int(cid), "obj") if cid is not None else "obj"
         prefix = f"#{int(tid)} " if tid is not None else ""
         out.append(f"{prefix}{name}")

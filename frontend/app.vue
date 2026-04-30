@@ -20,7 +20,7 @@ const githubUrl = 'https://github.com/DarthSaul/crosswalk-watch'
           <a
             :href="githubUrl"
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             class="nav-link"
             aria-label="GitHub repository"
           >
@@ -40,6 +40,12 @@ const githubUrl = 'https://github.com/DarthSaul/crosswalk-watch'
         <NuxtPage />
       </div>
     </main>
+    <footer class="app-footer">
+      <div class="container footer-inner">
+        <span>© {{ new Date().getFullYear() }} Saul Graves</span>
+        <a :href="githubUrl" target="_blank" rel="noopener noreferrer">Source on GitHub</a>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -74,14 +80,19 @@ const githubUrl = 'https://github.com/DarthSaul/crosswalk-watch'
 }
 
 * { box-sizing: border-box; }
-html, body, #__nuxt { height: 100%; }
-html { color-scheme: dark; }
+html, body, #__nuxt { min-height: 100%; }
+html {
+  color-scheme: dark;
+  background: var(--bg);
+}
 body {
   margin: 0;
+  min-height: 100vh;
   background:
     radial-gradient(1200px 600px at 80% -10%, rgba(45, 212, 191, 0.06), transparent 60%),
     radial-gradient(800px 500px at -10% 0%, rgba(96, 165, 250, 0.05), transparent 60%),
     var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
   font-size: 14px;
@@ -179,5 +190,27 @@ code {
 .app-main {
   flex: 1;
   padding: 32px 0 64px;
+}
+
+.app-footer {
+  border-top: 1px solid var(--border);
+  background: rgba(10, 13, 18, 0.6);
+  color: var(--muted);
+  font-size: 13px;
+}
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  flex-wrap: wrap;
+}
+.app-footer a {
+  color: var(--muted-strong);
+}
+.app-footer a:hover {
+  color: var(--text);
 }
 </style>

@@ -179,8 +179,14 @@ const steps = [
 	margin: 0;
 	padding: 0;
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	grid-template-columns: repeat(3, 1fr);
 	gap: 16px;
+}
+
+@media (max-width: 768px) {
+	.steps {
+		grid-template-columns: 1fr;
+	}
 }
 .steps li {
 	display: flex;
@@ -216,16 +222,11 @@ const steps = [
 
 .try-grid {
 	display: grid;
-	grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+	grid-template-columns: 1fr;
+	align-items: start;
 	gap: 20px;
-	align-items: stretch;
 }
-@media (max-width: 760px) {
-	.try-grid {
-		grid-template-columns: 1fr;
-		align-items: start;
-	}
-}
+
 .card {
 	background: var(--panel);
 	border: 1px solid var(--border);

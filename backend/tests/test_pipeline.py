@@ -5,6 +5,7 @@ import cv2
 import pytest
 
 from app.pipeline.processor import process_video
+from app.schemas import ZoneDefinition
 
 
 SAMPLE_ENV_VAR = "CROSSWALK_SAMPLE_PATH"
@@ -62,7 +63,19 @@ def test_pipeline_smoke(tmp_path: Path) -> None:
     output = tmp_path / "out.mp4"
     progress: list[float] = []
 
-    stats = process_video(clip, output, progress_callback=progress.append)
+    zones = [
+        ZoneDefinition(
+            name="center",
+            color="#ff6b6b",
+            points=[(0.2, 0.2), (0.8, 0.2), (0.8, 0.8), (0.2, 0.8)],
+        )
+    ]
+    stats = process_video(
+        clip,
+        output,
+        zones=zones,
+        progress_callback=progress.append,
+    )
 
     assert output.exists(), "annotated output mp4 was not written"
     assert output.stat().st_size > 1024, "annotated output is suspiciously small"
@@ -70,3 +83,11 @@ def test_pipeline_smoke(tmp_path: Path) -> None:
     assert stats.total_frames == written
     assert progress, "progress callback never fired"
     assert progress[-1] == 1.0, f"final progress was {progress[-1]}, not 1.0"
+
+    assert len(stats.zones) == 1
+    zone_stat = stats.zones[0]
+    assert zone_stat.name == "center"
+    assert zone_stat.color == "#ff6b6b"
+    assert len(zone_stat.occupancy_series) == written
+    assert zone_stat.entries >= 0
+    assert zone_stat.max_concurrent >= 0

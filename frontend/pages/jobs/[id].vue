@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { JobResponse } from '~/types/api'
+import type { JobResponse, ZoneDefinition } from '~/types/api'
 
 const route = useRoute()
 const jobId = computed(() => String(route.params.id))
@@ -11,6 +11,18 @@ const { data: job, error, pending, refresh } = await useAsyncData<JobResponse>(
   { watch: [jobId] },
 )
 
+const zones = ref<ZoneDefinition[]>([])
+
+watch(
+  job,
+  (next) => {
+    if (next && next.status !== 'uploaded') {
+      zones.value = next.zones ?? []
+    }
+  },
+  { immediate: true },
+)
+
 const analyzeError = ref<string | null>(null)
 const isAnalyzing = ref(false)
 
@@ -19,7 +31,7 @@ async function startAnalyze() {
   analyzeError.value = null
   isAnalyzing.value = true
   try {
-    await analyzeJob(job.value.id)
+    await analyzeJob(job.value.id, zones.value)
     await refresh()
   } catch (e: unknown) {
     analyzeError.value = e instanceof Error ? e.message : String(e)
@@ -54,6 +66,23 @@ onBeforeUnmount(stopPolling)
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString()
 }
+
+function onRemove(i: number) {
+  zones.value.splice(i, 1)
+}
+
+function onRename(i: number, name: string) {
+  const trimmed = name.trim()
+  if (!trimmed) return
+  zones.value[i] = { ...zones.value[i], name: trimmed }
+}
+
+function onClear() {
+  zones.value = []
+}
+
+const isEditable = computed(() => job.value?.status === 'uploaded' || job.value?.status === 'failed')
+const showStats = computed(() => job.value?.status === 'complete' && job.value.stats)
 </script>
 
 <template>
@@ -77,7 +106,7 @@ function formatDate(iso: string): string {
           </p>
         </div>
         <button
-          v-if="job.status === 'uploaded' || job.status === 'failed' || job.status === 'complete'"
+          v-if="job.status !== 'processing'"
           class="primary"
           :disabled="isAnalyzing"
           @click="startAnalyze"
@@ -104,14 +133,29 @@ function formatDate(iso: string): string {
         :stats="job.stats"
       />
 
-      <figure
-        v-else-if="job.thumbnail_url"
-        class="thumb"
-      >
-        <img :src="thumbnailUrl(job.id)" :alt="`Thumbnail for ${job.original_filename}`">
-        <figcaption class="muted">Frame at t≈1.0s</figcaption>
-      </figure>
+      <div v-else-if="job.thumbnail_url" class="frame-row">
+        <ZoneDrawer
+          v-if="isEditable"
+          :thumbnail-url="thumbnailUrl(job.id)"
+          :zones="zones"
+          @update:zones="zones = $event"
+        />
+        <figure v-else class="thumb">
+          <img :src="thumbnailUrl(job.id)" :alt="`Thumbnail for ${job.original_filename}`">
+          <figcaption class="muted">Frame at t≈1.0s</figcaption>
+        </figure>
+
+        <ZoneList
+          :zones="zones"
+          :readonly="!isEditable"
+          @remove="onRemove"
+          @rename="onRename"
+          @clear="onClear"
+        />
+      </div>
       <p v-else class="muted">Thumbnail not available.</p>
+
+      <StatsPanel v-if="showStats" :stats="job.stats!" />
     </div>
   </section>
 </template>
@@ -168,6 +212,16 @@ function formatDate(iso: string): string {
   border-radius: 8px;
   margin: 0 0 16px;
   font-size: 13px;
+}
+
+.frame-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .frame-row { grid-template-columns: 1fr; }
 }
 
 .thumb {

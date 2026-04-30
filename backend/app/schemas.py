@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class JobStatus(str, Enum):
@@ -12,11 +12,42 @@ class JobStatus(str, Enum):
     FAILED = "failed"
 
 
+class ZoneDefinition(BaseModel):
+    name: str = Field(min_length=1, max_length=64)
+    color: str = Field(pattern=r"^#[0-9a-fA-F]{6}$")
+    points: list[tuple[float, float]] = Field(min_length=3)
+
+    @field_validator("points")
+    @classmethod
+    def _points_in_unit_square(
+        cls, value: list[tuple[float, float]]
+    ) -> list[tuple[float, float]]:
+        for x, y in value:
+            if not (0.0 <= x <= 1.0 and 0.0 <= y <= 1.0):
+                raise ValueError("points must be normalized to [0, 1]")
+        return value
+
+
+class ZoneStats(BaseModel):
+    name: str
+    color: str
+    entries: int
+    avg_dwell_seconds: float
+    max_concurrent: int
+    occupancy_series: list[int]
+
+
 class ProcessingStats(BaseModel):
     total_frames: int
     processed_frames: int
     unique_tracks: int
     duration_seconds: float
+    fps: float
+    zones: list[ZoneStats] = Field(default_factory=list)
+
+
+class AnalyzeRequest(BaseModel):
+    zones: list[ZoneDefinition] = Field(default_factory=list)
 
 
 class JobRecord(BaseModel):
@@ -30,6 +61,7 @@ class JobRecord(BaseModel):
     result_path: Path | None = None
     progress: float = 0.0
     stats: ProcessingStats | None = None
+    zones: list[ZoneDefinition] = Field(default_factory=list)
     created_at: datetime
     error: str | None = None
 
@@ -42,6 +74,7 @@ class JobResponse(BaseModel):
     result_url: str | None
     progress: float
     stats: ProcessingStats | None
+    zones: list[ZoneDefinition]
     created_at: datetime
     error: str | None
 
@@ -63,6 +96,7 @@ class JobResponse(BaseModel):
             result_url=result_url,
             progress=record.progress,
             stats=record.stats,
+            zones=record.zones,
             created_at=record.created_at,
             error=record.error,
         )

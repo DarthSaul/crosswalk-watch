@@ -1,4 +1,4 @@
-import type { JobResponse } from '~/types/api'
+import type { JobResponse, ZoneDefinition } from '~/types/api'
 
 export function useJobApi() {
   const config = useRuntimeConfig()
@@ -17,9 +17,13 @@ export function useJobApi() {
     return await $fetch<JobResponse>(`${apiBase}/api/jobs/${id}`)
   }
 
-  async function analyzeJob(id: string): Promise<JobResponse> {
+  async function analyzeJob(
+    id: string,
+    zones: ZoneDefinition[] = [],
+  ): Promise<JobResponse> {
     return await $fetch<JobResponse>(`${apiBase}/api/jobs/${id}/analyze`, {
       method: 'POST',
+      body: { zones },
     })
   }
 

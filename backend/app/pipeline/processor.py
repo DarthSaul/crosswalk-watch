@@ -9,7 +9,13 @@ import supervision as sv
 from app.pipeline.annotators import annotate_frame, make_annotators
 from app.pipeline.detector import ALLOWED_CLASS_IDS, CLASS_NAMES, load_model
 from app.pipeline.tracker import make_tracker
-from app.schemas import ProcessingStats
+from app.pipeline.zones import (
+    annotate_zones,
+    build_zone_runtimes,
+    summarize_zones,
+    update_zone_runtimes,
+)
+from app.schemas import ProcessingStats, ZoneDefinition
 
 
 ProgressCallback = Callable[[float], None]
@@ -22,6 +28,7 @@ class PipelineError(Exception):
 def process_video(
     video_path: Path,
     output_path: Path,
+    zones: list[ZoneDefinition] | None = None,
     progress_callback: ProgressCallback | None = None,
     progress_throttle_frames: int = 15,
 ) -> ProcessingStats:
@@ -34,6 +41,10 @@ def process_video(
 
     video_info = sv.VideoInfo.from_video_path(str(video_path))
     total = video_info.total_frames or 0
+    width, height = video_info.resolution_wh
+    fps = float(video_info.fps or 30.0)
+
+    zone_runtimes = build_zone_runtimes(zones or [], width, height)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     raw_path = output_path.with_suffix(".raw.mp4")
@@ -53,12 +64,15 @@ def process_video(
                 detections = sv.Detections.from_ultralytics(results)
                 detections = tracker.update_with_detections(detections)
 
+                update_zone_runtimes(zone_runtimes, detections)
+
                 labels = _build_labels(detections)
                 for tid in detections.tracker_id:
                     if tid is not None:
                         seen_tracks.add(int(tid))
 
                 annotated = annotate_frame(frame, detections, labels, annotators)
+                annotated = annotate_zones(annotated, zone_runtimes)
                 sink.write_frame(annotated)
                 processed += 1
 
@@ -81,6 +95,8 @@ def process_video(
         processed_frames=processed,
         unique_tracks=len(seen_tracks),
         duration_seconds=time.monotonic() - started,
+        fps=fps,
+        zones=summarize_zones(zone_runtimes, fps),
     )
 
 
@@ -94,9 +110,7 @@ def _build_labels(detections: sv.Detections) -> list[str]:
 
 
 def _transcode_to_web_mp4(src: Path, dst: Path) -> None:
-    """Re-encode supervision's mp4v output to H.264 + faststart for browsers."""
     if shutil.which("ffmpeg") is None:
-        # Best-effort fallback: just rename. Some browsers may refuse to play it.
         src.replace(dst)
         return
 

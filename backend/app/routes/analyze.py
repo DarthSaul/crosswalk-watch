@@ -5,7 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.config import Settings, get_settings
 from app.pipeline.processor import PipelineError, process_video
-from app.schemas import JobResponse, JobStatus
+from app.schemas import AnalyzeRequest, JobResponse, JobStatus, ZoneDefinition
 from app.storage import jobs as job_store
 
 
@@ -22,6 +22,7 @@ router = APIRouter(prefix="/api/jobs", tags=["analyze"])
 async def analyze_job(
     job_id: str,
     background_tasks: BackgroundTasks,
+    request: AnalyzeRequest = AnalyzeRequest(),
     settings: Settings = Depends(get_settings),
 ) -> JobResponse:
     record = job_store.get(job_id)
@@ -43,20 +44,33 @@ async def analyze_job(
         error=None,
         result_path=output_path,
         stats=None,
+        zones=request.zones,
     )
 
-    background_tasks.add_task(_run_pipeline, job_id, record.video_path, output_path)
+    background_tasks.add_task(
+        _run_pipeline, job_id, record.video_path, output_path, request.zones
+    )
     refreshed = job_store.get(job_id)
     assert refreshed is not None
     return JobResponse.from_record(refreshed)
 
 
-def _run_pipeline(job_id: str, video_path: Path, output_path: Path) -> None:
+def _run_pipeline(
+    job_id: str,
+    video_path: Path,
+    output_path: Path,
+    zones: list[ZoneDefinition],
+) -> None:
     def on_progress(p: float) -> None:
         job_store.update(job_id, progress=p)
 
     try:
-        stats = process_video(video_path, output_path, progress_callback=on_progress)
+        stats = process_video(
+            video_path,
+            output_path,
+            zones=zones,
+            progress_callback=on_progress,
+        )
         job_store.update(
             job_id,
             status=JobStatus.COMPLETE,

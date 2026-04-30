@@ -40,8 +40,15 @@ COPY app ./app
 
 RUN mkdir -p /app/data/uploads /app/data/outputs /app/data/samples
 
+# Optional: drop *.mp4 files into backend/samples-seed/ before building to bake
+# them into /app/data/samples/. Useful on platforms where the data dir is on a
+# fresh persistent volume and you want the picker to have content out of the box.
+COPY samples-seed/ /app/data/samples/
+
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
     CMD curl -fsS http://localhost:8000/health || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# --proxy-headers + --forwarded-allow-ips=* so X-Forwarded-* from Fly's edge
+# proxy is honored (correct scheme/host in any redirects we generate).
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*"]

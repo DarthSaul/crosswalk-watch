@@ -163,6 +163,64 @@ The image installs `ffmpeg` and runs `uvicorn` on port 8000. Mount
 `backend/data` so uploads, outputs, and samples persist across container
 runs.
 
+## Deploy
+
+Recommended split for a portfolio-style demo (~$5/mo all-in):
+
+- **Backend** on [Fly.io](https://fly.io) — runs the existing
+  [backend/Dockerfile](backend/Dockerfile), persistent volume for data, machines
+  sleep when idle and wake on incoming requests.
+- **Frontend** on [Netlify](https://www.netlify.com) — Nuxt 3 with the
+  first-party Netlify preset, free tier covers it.
+
+### Backend — Fly.io
+
+```sh
+brew install flyctl
+fly auth login
+cd backend
+
+# Use the committed fly.toml; edit `app` to a unique name first
+fly launch --copy-config --no-deploy
+
+# Persistent disk for uploads, outputs, sample thumbnails, YOLO weights
+fly volumes create crosswalk_data --size 3 --region <your-region>
+
+# CORS for your eventual Netlify URL (JSON list, set as a Fly secret)
+fly secrets set \
+  CROSSWALK_ALLOWED_ORIGINS='["https://<your-site>.netlify.app"]'
+
+fly deploy
+```
+
+`fly.toml` sizes the VM at `shared-cpu-2x` / 2 GB — comfortable for nano YOLO +
+ffmpeg. `shared-cpu-1x` will OOM during torch import.
+
+To pre-load sample clips for the picker on the home page, drop short `.mp4`
+files into `backend/samples-seed/` before `fly deploy` — they're baked into
+`/app/data/samples/` at image build time. Trim long clips down first
+(`ffmpeg -i input.mp4 -t 10 -c copy seed.mp4`) so they don't bloat the image.
+
+### Frontend — Netlify
+
+1. Connect the repo as a new site.
+2. Base directory: `frontend` (the committed `netlify.toml` handles the rest).
+3. Add an env var: `NUXT_PUBLIC_API_BASE=https://<fly-app>.fly.dev`.
+4. Trigger a deploy.
+
+### Tuning detection in production
+
+If pedestrians are getting missed, set Fly secrets to upgrade the model
+without redeploying:
+
+```sh
+fly secrets set CROSSWALK_YOLO_IMGSZ=1280
+fly secrets set CROSSWALK_YOLO_WEIGHTS=yolo11s.pt   # if 1280 alone isn't enough
+```
+
+The runtime cost goes up roughly linearly with both knobs; expect ~3–4×
+analyses on a `shared-cpu-2x` if you go all-in.
+
 ## Notes
 
 - COCO classes are filtered to person, bicycle, car, truck.

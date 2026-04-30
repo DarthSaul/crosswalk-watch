@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="CROSSWALK_", env_file=".env", extra="ignore")
 
     data_dir: Path = Path("data")
+    # Set in production via CROSSWALK_ALLOWED_ORIGINS as JSON, e.g.:
+    #   CROSSWALK_ALLOWED_ORIGINS='["http://localhost:3000","https://example.netlify.app"]'
     allowed_origins: list[str] = ["http://localhost:3000"]
     thumbnail_seconds: float = 1.0
     max_upload_mb: int = 200

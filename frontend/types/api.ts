@@ -26,6 +26,16 @@ export interface ProcessingStats {
   zones: ZoneStats[]
 }
 
+export interface SampleInfo {
+  filename: string
+  size_bytes: number
+  duration_seconds: number | null
+  width: number | null
+  height: number | null
+  fps: number | null
+  thumbnail_url: string
+}
+
 export interface JobResponse {
   id: string
   status: JobStatus

@@ -104,3 +104,17 @@ class JobResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     status: str = Field(default="ok")
+
+
+class SampleInfo(BaseModel):
+    filename: str
+    size_bytes: int
+    duration_seconds: float | None
+    width: int | None
+    height: int | None
+    fps: float | None
+    thumbnail_url: str
+
+
+class CreateFromSampleRequest(BaseModel):
+    filename: str = Field(min_length=1, max_length=255)

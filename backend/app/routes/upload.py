@@ -1,14 +1,14 @@
-import asyncio
-import uuid
-from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from app.config import Settings, get_settings
-from app.schemas import JobRecord, JobResponse, JobStatus
-from app.storage import jobs as job_store
-from app.thumbnails import ThumbnailError, extract_thumbnail
+from app.schemas import JobResponse
+from app.services.jobs import (
+    JobCreationError,
+    new_job_paths,
+    thumbnail_and_register,
+)
 
 
 router = APIRouter(prefix="/api", tags=["videos"])
@@ -37,10 +37,7 @@ async def upload_video(
         )
 
     settings.ensure_dirs()
-    job_id = uuid.uuid4().hex
-    suffix = _suffix(file.filename)
-    video_path = settings.uploads_dir / f"{job_id}{suffix}"
-    thumb_path = settings.uploads_dir / f"{job_id}.jpg"
+    job_id, video_path, thumbnail_path = new_job_paths(settings, _suffix(file.filename))
 
     max_bytes = settings.max_upload_mb * 1024 * 1024
     bytes_written = 0
@@ -71,24 +68,16 @@ async def upload_video(
         await file.close()
 
     try:
-        await asyncio.to_thread(
-            extract_thumbnail, video_path, thumb_path, settings.thumbnail_seconds
+        record = await thumbnail_and_register(
+            job_id=job_id,
+            video_path=video_path,
+            thumbnail_path=thumbnail_path,
+            original_filename=file.filename or video_path.name,
+            settings=settings,
         )
-    except ThumbnailError as exc:
-        video_path.unlink(missing_ok=True)
-        thumb_path.unlink(missing_ok=True)
+    except JobCreationError as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(exc),
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
         ) from exc
 
-    record = JobRecord(
-        id=job_id,
-        status=JobStatus.UPLOADED,
-        original_filename=file.filename or f"{job_id}{suffix}",
-        video_path=video_path,
-        thumbnail_path=thumb_path,
-        created_at=datetime.now(timezone.utc),
-    )
-    job_store.create(record)
     return JobResponse.from_record(record)

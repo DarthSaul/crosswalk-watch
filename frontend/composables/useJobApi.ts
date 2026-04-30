@@ -1,4 +1,4 @@
-import type { JobResponse, ZoneDefinition } from '~/types/api'
+import type { JobResponse, SampleInfo, ZoneDefinition } from '~/types/api'
 
 export function useJobApi() {
   const config = useRuntimeConfig()
@@ -27,6 +27,17 @@ export function useJobApi() {
     })
   }
 
+  async function listSamples(): Promise<SampleInfo[]> {
+    return await $fetch<SampleInfo[]>(`${apiBase}/api/samples`)
+  }
+
+  async function createJobFromSample(filename: string): Promise<JobResponse> {
+    return await $fetch<JobResponse>(`${apiBase}/api/videos/from-sample`, {
+      method: 'POST',
+      body: { filename },
+    })
+  }
+
   function thumbnailUrl(id: string): string {
     return `${apiBase}/api/jobs/${id}/thumbnail`
   }
@@ -35,5 +46,19 @@ export function useJobApi() {
     return `${apiBase}/api/jobs/${id}/result`
   }
 
-  return { uploadVideo, getJob, analyzeJob, thumbnailUrl, resultUrl, apiBase }
+  function sampleThumbnailUrl(filename: string): string {
+    return `${apiBase}/api/samples/${encodeURIComponent(filename)}/thumbnail`
+  }
+
+  return {
+    uploadVideo,
+    getJob,
+    analyzeJob,
+    listSamples,
+    createJobFromSample,
+    thumbnailUrl,
+    resultUrl,
+    sampleThumbnailUrl,
+    apiBase,
+  }
 }

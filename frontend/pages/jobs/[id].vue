@@ -205,11 +205,11 @@ const showStats = computed(() => job.value?.status === 'complete' && job.value.s
 .primary:disabled { opacity: 0.5; cursor: progress; }
 
 .error-banner {
-  background: #f8514922;
-  border: 1px solid #f8514955;
-  color: #ffb4ad;
+  background: var(--danger-soft);
+  border: 1px solid rgba(248, 113, 113, 0.36);
+  color: #ffd0cb;
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   margin: 0 0 16px;
   font-size: 13px;
 }

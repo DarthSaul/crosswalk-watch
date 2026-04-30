@@ -76,18 +76,18 @@ function openPicker() {
 <style scoped>
 .uploader {
   border: 2px dashed var(--border);
-  border-radius: 12px;
-  padding: 64px 24px;
+  border-radius: var(--radius);
+  padding: 36px 20px;
   text-align: center;
   cursor: pointer;
-  background: var(--panel);
-  transition: border-color 0.15s, background-color 0.15s;
+  background: var(--bg-soft);
+  transition: border-color var(--transition), background-color var(--transition);
 }
-.uploader.dragging { border-color: var(--accent); background: rgba(88, 166, 255, 0.08); }
-.uploader.uploading { cursor: progress; opacity: 0.7; }
-.title { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
-.sub { color: var(--muted); margin: 0; }
-.status { font-size: 16px; color: var(--accent); }
-.error { color: #f85149; margin-top: 12px; font-size: 13px; }
+.uploader.dragging { border-color: var(--accent); background: var(--accent-soft); }
+.uploader.uploading { cursor: progress; opacity: 0.75; }
+.title { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+.sub { color: var(--muted); margin: 0; font-size: 13px; }
+.status { font-size: 14px; color: var(--accent); }
+.error { color: var(--danger); margin-top: 10px; font-size: 13px; }
 .hidden-input { display: none; }
 </style>

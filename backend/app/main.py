@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routes import analyze, jobs, media, upload
+from app.routes import analyze, jobs, media, samples, upload
 from app.schemas import HealthResponse
 
 
@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
     app.include_router(jobs.router)
     app.include_router(media.router)
     app.include_router(analyze.router)
+    app.include_router(samples.router)
     return app
 
 

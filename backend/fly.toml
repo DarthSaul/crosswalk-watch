@@ -1,0 +1,45 @@
+# Fly.io app config for the Crosswalk Watch backend.
+#
+# First-time setup:
+#   fly launch --no-deploy --copy-config        # if you want to re-generate; keep this file
+#   fly volumes create crosswalk_data --size 3 --region <your region>
+#   fly secrets set \
+#     CROSSWALK_ALLOWED_ORIGINS='["https://<your-frontend>.vercel.app"]'
+#   fly deploy
+#
+# Pick `app` and `primary_region` to match your account before the first deploy.
+
+app = "crosswalk-watch-backend"
+primary_region = "sjc"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  # Sleep when idle and wake on incoming requests — keeps cost near zero
+  # for a portfolio demo at the cost of ~10–30s cold starts.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[http_service.checks]]
+  grace_period = "30s"
+  interval = "30s"
+  timeout = "5s"
+  method = "GET"
+  path = "/health"
+
+[mounts]
+  source = "crosswalk_data"
+  destination = "/app/data"
+
+[env]
+  # Inference is CPU-bound, so let torch use both vCPUs.
+  OMP_NUM_THREADS = "2"
+  MKL_NUM_THREADS = "2"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"

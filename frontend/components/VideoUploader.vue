@@ -11,6 +11,7 @@ const error = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 async function handleFile(file: File) {
+  if (isUploading.value) return
   error.value = null
   if (!file.type.startsWith('video/')) {
     error.value = `Expected a video file, got "${file.type || 'unknown'}".`
@@ -31,18 +32,24 @@ async function handleFile(file: File) {
 function onDrop(event: DragEvent) {
   event.preventDefault()
   isDragging.value = false
+  if (isUploading.value) return
   const file = event.dataTransfer?.files?.[0]
   if (file) handleFile(file)
 }
 
 function onChange(event: Event) {
   const target = event.target as HTMLInputElement
+  if (isUploading.value) {
+    target.value = ''
+    return
+  }
   const file = target.files?.[0]
   if (file) handleFile(file)
   target.value = ''
 }
 
 function openPicker() {
+  if (isUploading.value) return
   fileInput.value?.click()
 }
 </script>
@@ -51,11 +58,16 @@ function openPicker() {
   <div
     class="uploader"
     :class="{ dragging: isDragging, uploading: isUploading }"
+    role="button"
+    tabindex="0"
+    aria-label="Upload a video — drop a file here or press Enter to choose"
     @dragover.prevent="isDragging = true"
     @dragenter.prevent="isDragging = true"
     @dragleave.prevent="isDragging = false"
     @drop="onDrop"
     @click="openPicker"
+    @keydown.enter.prevent="openPicker"
+    @keydown.space.prevent="openPicker"
   >
     <input
       ref="fileInput"

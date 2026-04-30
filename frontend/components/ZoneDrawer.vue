@@ -13,13 +13,31 @@ const emit = defineEmits<{
 const drawing = useZoneDrawing(props.zones)
 watch(drawing.zones, (next) => emit('update:zones', next), { deep: true })
 
+function zonesEqual(a: ZoneDefinition[], b: ZoneDefinition[]): boolean {
+  if (a === b) return true
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    const za = a[i]
+    const zb = b[i]
+    if (za.name !== zb.name || za.color !== zb.color) return false
+    if (za.points.length !== zb.points.length) return false
+    for (let j = 0; j < za.points.length; j++) {
+      if (za.points[j][0] !== zb.points[j][0] || za.points[j][1] !== zb.points[j][1]) {
+        return false
+      }
+    }
+  }
+  return true
+}
+
 watch(
   () => props.zones,
   (next) => {
-    if (next !== drawing.zones.value) {
-      drawing.zones.value = [...next]
+    if (!zonesEqual(next, drawing.zones.value)) {
+      drawing.zones.value = next.map((z) => ({ ...z, points: z.points.map((p) => [...p] as Point) }))
     }
   },
+  { deep: true },
 )
 
 const surfaceRef = ref<HTMLElement | null>(null)

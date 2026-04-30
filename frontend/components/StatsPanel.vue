@@ -92,7 +92,12 @@ function buildConfig(stats: ProcessingStats): ChartConfiguration<'line'> {
 }
 
 function hexToRgba(hex: string, alpha: number): string {
-  const m = hex.replace('#', '')
+  const fallback = `rgba(125, 125, 125, ${alpha})`
+  let m = hex.trim().replace(/^#/, '')
+  if (/^[0-9a-fA-F]{3}$/.test(m)) {
+    m = m[0] + m[0] + m[1] + m[1] + m[2] + m[2]
+  }
+  if (!/^[0-9a-fA-F]{6}$/.test(m)) return fallback
   const r = parseInt(m.slice(0, 2), 16)
   const g = parseInt(m.slice(2, 4), 16)
   const b = parseInt(m.slice(4, 6), 16)

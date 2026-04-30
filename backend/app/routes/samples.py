@@ -53,8 +53,10 @@ def _probe_video(path: Path) -> tuple[float | None, int | None, int | None, floa
             return None, None, None, None
         fps = cap.get(cv2.CAP_PROP_FPS) or None
         frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or None
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or None
+        raw_w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        raw_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        width = int(raw_w) if raw_w is not None else None
+        height = int(raw_h) if raw_h is not None else None
         duration = (frame_count / fps) if fps and frame_count else None
         return duration, width, height, fps
     finally:

@@ -10,12 +10,13 @@ _lock = threading.Lock()
 
 def create(record: JobRecord) -> None:
     with _lock:
-        _jobs[record.id] = record
+        _jobs[record.id] = record.model_copy(deep=True)
 
 
 def get(job_id: str) -> JobRecord | None:
     with _lock:
-        return _jobs.get(job_id)
+        record = _jobs.get(job_id)
+        return record.model_copy(deep=True) if record is not None else None
 
 
 def update(job_id: str, **fields: Any) -> JobRecord:
@@ -23,9 +24,9 @@ def update(job_id: str, **fields: Any) -> JobRecord:
         record = _jobs[job_id]
         updated = record.model_copy(update=fields)
         _jobs[job_id] = updated
-        return updated
+        return updated.model_copy(deep=True)
 
 
 def list_all() -> list[JobRecord]:
     with _lock:
-        return list(_jobs.values())
+        return [record.model_copy(deep=True) for record in _jobs.values()]

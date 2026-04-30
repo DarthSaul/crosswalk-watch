@@ -6,8 +6,9 @@ defineProps<{ src: string; stats: ProcessingStats | null }>()
 function formatDuration(seconds: number): string {
   if (seconds < 1) return `${Math.round(seconds * 1000)} ms`
   if (seconds < 60) return `${seconds.toFixed(1)} s`
-  const m = Math.floor(seconds / 60)
-  const s = Math.round(seconds % 60)
+  const totalSeconds = Math.round(seconds)
+  const m = Math.floor(totalSeconds / 60)
+  const s = totalSeconds % 60
   return `${m}m ${s}s`
 }
 </script>

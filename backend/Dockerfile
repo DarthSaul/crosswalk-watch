@@ -45,6 +45,11 @@ RUN mkdir -p /app/data/uploads /app/data/outputs /app/data/samples
 # fresh persistent volume and you want the picker to have content out of the box.
 COPY samples-seed/ /app/data/samples/
 
+RUN groupadd --system --gid 1001 appuser \
+ && useradd --system --uid 1001 --gid appuser --no-create-home appuser \
+ && chown -R appuser:appuser /app
+USER appuser
+
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
     CMD curl -fsS http://localhost:8000/health || exit 1

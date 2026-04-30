@@ -19,8 +19,9 @@ mkdir -p "$DEST"
 
 copied=0
 if compgen -G "${ROOT_SAMPLES}/*.mp4" > /dev/null; then
-  echo "Found $(ls -1 ${ROOT_SAMPLES}/*.mp4 | wc -l | tr -d ' ') clip(s) at ${ROOT_SAMPLES}/"
-  for src in "${ROOT_SAMPLES}"/*.mp4; do
+  count=$(find "${ROOT_SAMPLES}" -maxdepth 1 -type f -name '*.mp4' -print0 | tr -cd '\0' | wc -c | tr -d ' ')
+  echo "Found ${count} clip(s) at ${ROOT_SAMPLES}/"
+  while IFS= read -r -d '' src; do
     name=$(basename "$src")
     dst="${DEST}/${name}"
     if [[ -f "$dst" ]]; then
@@ -30,7 +31,7 @@ if compgen -G "${ROOT_SAMPLES}/*.mp4" > /dev/null; then
       cp "$src" "$dst"
       copied=$((copied + 1))
     fi
-  done
+  done < <(find "${ROOT_SAMPLES}" -maxdepth 1 -type f -name '*.mp4' -print0)
 fi
 
 if [[ $copied -eq 0 ]] && ! compgen -G "${DEST}/*.mp4" > /dev/null; then

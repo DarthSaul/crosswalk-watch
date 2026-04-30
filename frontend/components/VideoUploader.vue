@@ -82,6 +82,12 @@ function openPicker() {
   cursor: pointer;
   background: var(--bg-soft);
   transition: border-color var(--transition), background-color var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 160px;
 }
 .uploader.dragging { border-color: var(--accent); background: var(--accent-soft); }
 .uploader.uploading { cursor: progress; opacity: 0.75; }
